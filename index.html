@@ -1,178 +1,53 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>عصر فیروزه ۱ - دنیای مزرعه‌داری</title>
-  <link href="https://cdn.fontcdn.ir/Font/Persian/Yekan/Yekan.css" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: 'Yekan', sans-serif;
-      background: #f5f5f5;
-      color: #333;
-    }
-    header {
-      background: #00bfa5;
-      color: white;
-      padding: 2rem 1rem;
-      text-align: center;
-    }
-    .icon {
-      width: 100px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    h1 {
-      margin: 1rem 0 0.5rem;
-      font-size: 2rem;
-    }
-    p {
-      margin: 0.8rem auto;
-      max-width: 700px;
-      line-height: 1.8;
-      font-size: 1rem;
-    }
-    .slider, .comments-slider {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      gap: 1rem;
-      padding: 1rem;
-    }
-    .slider img {
-      height: 200px;
-      border-radius: 12px;
-      scroll-snap-align: center;
-      flex-shrink: 0;
-    }
-    .buttons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin: 2rem 1rem;
-    }
-    .buttons a {
-      background: #00796b;
-      color: white;
-      text-decoration: none;
-      padding: 0.9rem 1.5rem;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: background 0.3s;
-    }
-    .buttons a:hover {
-      background: #004d40;
-    }
-    .comment-box {
-      background: white;
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      min-width: 250px;
-      max-width: 300px;
-      scroll-snap-align: center;
-      flex-shrink: 0;
-    }
-    .stars {
-      color: gold;
-      font-size: 1.2rem;
-      margin-bottom: 0.5rem;
-    }
-    .comment-user {
-      font-weight: bold;
-      margin-top: 0.5rem;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem 1rem;
-      font-size: 0.9rem;
-      color: #666;
-      background: #eeeeee;
-      margin-top: 2rem;
-    }
-    .company-logo {
-      margin-top: 1rem;
-      width: 140px;
-      border-radius: 8px;
-    }
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.5rem;
-      }
-      .slider img {
-        height: 160px;
-      }
-      .buttons a {
-        width: 100%;
-        text-align: center;
-      }
-    }
-  </style>
+  <title>MetaMask Payment</title>
 </head>
 <body>
+  <h2>پرداخت با متامسک</h2>
+  <button onclick="connectWallet()">اتصال به متامسک</button>
+  <button onclick="sendPayment()">پرداخت</button>
 
-  <header>
-    <img src="https://s.cafebazaar.ir/images/icons/com.payam.Age_Of_Turquoise-9dfa7832-1f08-44bc-aee8-64f51f3340ec_512x512.png?x-img=v1/format,type_webp,lossless_false/resize,h_128,w_128,lossless_false/optimize" alt="آیکن بازی" class="icon">
-    <h1>عصر فیروزه ۱: دنیای مزرعه‌داری</h1>
-    <p>
-      یه بازی کاملاً ایرانی تو سبک مدیریت مزرعه، پر از جزئیات دوست‌داشتنی و کارهای روزمره‌ی کشاورزی!
-      <br>
-      تو این بازی باید از صفر شروع کنی، زمین بخری، بکاری، برداشت کنی، دام پرورش بدی و مزرعتو گسترش بدی.
-      <br>
-      با گرافیک ساده ولی باحال، تجربه‌ای متفاوت از زندگی روستایی و اقتصادی واست رقم می‌زنه.
-    </p>
-  </header>
+  <script>
+    let userAddress = null;
 
-  <section class="slider">
-    <img src="https://s.cafebazaar.ir/images/upload/screenshot/com.payam.Age_Of_Turquoise-098056611591.jpg" alt="اسکرین ۱">
-    <img src="https://s.cafebazaar.ir/images/upload/screenshot/com.payam.Age_Of_Turquoise-954050010404.jpg" alt="اسکرین ۲">
-    <img src="https://s.cafebazaar.ir/images/upload/screenshot/com.payam.Age_Of_Turquoise-725303645161.jpg" alt="اسکرین ۳">
-    <img src="https://s.cafebazaar.ir/images/upload/screenshot/com.payam.Age_Of_Turquoise-595800500465.jpg" alt="اسکرین ۴">
-    <img src="https://s.cafebazaar.ir/images/upload/screenshot/com.payam.Age_Of_Turquoise-276762988867.jpg" alt="اسکرین ۵">
-    <img src="https://s.cafebazaar.ir/images/upload/screenshot/com.payam.Age_Of_Turquoise-151331825608.jpg" alt="اسکرین ۶">
-  </section>
+    async function connectWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          userAddress = accounts[0];
+          alert("اتصال موفق! آدرس شما: " + userAddress);
+        } catch (error) {
+          console.error("خطا در اتصال:", error);
+        }
+      } else {
+        alert("MetaMask نصب نيست. لطفا آن را از Chrome Web Store نصب کنيد.");
+      }
+    }
 
-  <div class="buttons">
-    <a href="https://cafebazaar.ir/app/com.payam.Age_Of_Turquoise">دانلود از بازار</a>
-    <a href="https://myket.ir/app/com.payam.Age_Of_Turquoise">دانلود از مایکت</a>
-  </div>
+    async function sendPayment() {
+      if (!userAddress) {
+        alert("لطفاً ابتدا متامسک را وصل کنيد.");
+        return;
+      }
 
-  <section style="padding: 1rem;">
-    <h2 style="text-align: center;">نظرات کاربران</h2>
-    <div class="comments-slider">
-      <div class="comment-box">
-        <div class="stars">★★★★★</div>
-        <div>خیلی نوستالژیکه! منو برد به بازی‌های قدیم مزرعه‌داری. ممنون از سازنده‌اش.</div>
-        <div class="comment-user">علیرضا س.</div>
-      </div>
-      <div class="comment-box">
-        <div class="stars">★★★★☆</div>
-        <div>گرافیک ساده ولی سرگرم‌کننده‌ست. فقط اگه آنلاین هم می‌شد عالی بود!</div>
-        <div class="comment-user">زهرا ن.</div>
-      </div>
-      <div class="comment-box">
-        <div class="stars">★★★★★</div>
-        <div>من عاشق این بازیم! هر روز بازی می‌کنم. کلی چیز واسه ساختن داره.</div>
-        <div class="comment-user">پارسا ک.</div>
-      </div>
-      <div class="comment-box">
-        <div class="stars">★★★★☆</div>
-        <div>مزرعه‌ی من شده مث یه شهر! خیلی امکانات داره، دم شما گرم.</div>
-        <div class="comment-user">مریم ر.</div>
-      </div>
-    </div>
-  </section>
+      const transactionParameters = {
+        to: '0xYourReceiverAddressHere', // آدرس گيرنده (تغيير دهيد)
+        from: userAddress,
+        value: '0x2386F26FC10000', // مقدار: 0.01 ETH (به hex)
+      };
 
-  <footer>
-    توسعه داده شده توسط پیام گیم | جوادش شیبانی
-    <br>
-    <img src="https://bayanbox.ir/view/4002414621501768354/baner.jpg" alt="لوگوی شرکت" class="company-logo">
-  </footer>
-
+      try {
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [transactionParameters],
+        });
+        alert('تراکنش ارسال شد! Hash:\n' + txHash);
+      } catch (error) {
+        console.error("خطا در پرداخت:", error);
+      }
+    }
+  </script>
 </body>
 </html>

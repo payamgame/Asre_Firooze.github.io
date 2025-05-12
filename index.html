@@ -1,53 +1,88 @@
-<!DOCTYPE html>
-<html>
+ <!DOCTYPE html>
+<html lang="fa">
 <head>
   <meta charset="UTF-8">
-  <title>MetaMask Payment</title>
+  <title>ماین با ورود گوگل</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 4rem; direction: rtl }
+    #score { font-size: 3rem; margin: 1rem; color: green; }
+    button { font-size: 1rem; padding: .6rem 1.5rem; margin: 1rem; cursor: pointer }
+  </style>
 </head>
 <body>
-  <h2>پرداخت با متامسک</h2>
-  <button onclick="connectWallet()">اتصال به متامسک</button>
-  <button onclick="sendPayment()">پرداخت</button>
+
+  <div id="g_id_onload"
+    data-client_id="120720656169-sst809blbrbl1mbt4rpjfkrmk18lkjh8.apps.googleusercontent.com"
+    data-callback="handleCredentialResponse"
+    data-auto_prompt="false">
+  </div>
+
+  <div class="g_id_signin"
+    data-type="standard"
+    data-size="large"
+    data-theme="outline"
+    data-text="sign_in_with"
+    data-shape="rectangular"
+    data-logo_alignment="left">
+  </div>
+
+  <h2 id="welcome" style="display:none;"></h2>
+  <div id="score" style="display:none;">0</div>
+  <button id="finishBtn" style="display:none;">اتمام استخراج</button>
 
   <script>
-    let userAddress = null;
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRGnDF4NwW29-xqurtLMjtbEtWTgKhl0xmN9ONK1UkksRf1l8fPETojViRsejvl8zlDQ/exec";
+    let timer, score = 0, sessionId, userEmail;
 
-    async function connectWallet() {
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          userAddress = accounts[0];
-          alert("اتصال موفق! آدرس شما: " + userAddress);
-        } catch (error) {
-          console.error("خطا در اتصال:", error);
-        }
-      } else {
-        alert("MetaMask نصب نيست. لطفا آن را از Chrome Web Store نصب کنيد.");
-      }
+    function handleCredentialResponse(response) {
+      const jwt = parseJwt(response.credential);
+      userEmail = jwt.email;
+      document.querySelector('.g_id_signin').style.display = 'none';
+      document.getElementById('welcome').textContent = `خوش آمدی ${userEmail}`;
+      document.getElementById('welcome').style.display = 'block';
+      document.getElementById('score').style.display = 'block';
+      document.getElementById('finishBtn').style.display = 'inline-block';
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'start', email: userEmail })
+      })
+      .then(res => res.json())
+      .then(data => {
+        sessionId = data.sessionId;
+        timer = setInterval(() => {
+          score++;
+          document.getElementById('score').textContent = score.toLocaleString("fa-IR");
+        }, 1000);
+      });
     }
 
-    async function sendPayment() {
-      if (!userAddress) {
-        alert("لطفاً ابتدا متامسک را وصل کنيد.");
-        return;
-      }
+    document.getElementById('finishBtn').onclick = () => {
+      clearInterval(timer);
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'finish', session: sessionId, email: userEmail })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg === 'OK' ? 'امتیاز ثبت شد!' : msg);
+        location.reload();
+      });
+    };
 
-      const transactionParameters = {
-        to: '0xYourReceiverAddressHere', // آدرس گيرنده (تغيير دهيد)
-        from: userAddress,
-        value: '0x2386F26FC10000', // مقدار: 0.01 ETH (به hex)
-      };
+    window.addEventListener("unload", () => {
+      if (sessionId)
+        navigator.sendBeacon(SCRIPT_URL, JSON.stringify({ action: 'cancel', session: sessionId }));
+    });
 
-      try {
-        const txHash = await window.ethereum.request({
-          method: 'eth_sendTransaction',
-          params: [transactionParameters],
-        });
-        alert('تراکنش ارسال شد! Hash:\n' + txHash);
-      } catch (error) {
-        console.error("خطا در پرداخت:", error);
-      }
+    function parseJwt(token) {
+      const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(atob(base64).split('').map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      return JSON.parse(json);
     }
   </script>
+
 </body>
 </html>
